@@ -756,6 +756,7 @@ stratum_cc_test(
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
+        "//stratum/glue/status:status_test_util",
         "//stratum/lib:constants",
     ],
 )
