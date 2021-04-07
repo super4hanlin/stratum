@@ -1160,6 +1160,7 @@ void SetUpInterfacesInterfaceConfigEnabled(const bool state, uint64 node_id,
     }
 
     // Update the chassis config.
+    // TODO(max): use std::find to handle lookup failures.
     ChassisConfig* new_config = config->writable();
     for (auto& singleton_port : *new_config->mutable_singleton_ports()) {
       if (singleton_port.node() == node_id && singleton_port.id() == port_id) {
@@ -1317,7 +1318,6 @@ void SetUpInterfacesInterfaceEthernetConfigMacAddress(uint64 node_id,
                         stream);
   };
   auto on_change_functor = UnsupportedFunc();
-
   auto on_set_functor =
       [node_id, port_id, node, tree](
           const ::gnmi::Path& path, const ::google::protobuf::Message& val,
@@ -1327,10 +1327,10 @@ void SetUpInterfacesInterfaceEthernetConfigMacAddress(uint64 node_id,
     if (typed_val == nullptr) {
       return MAKE_ERROR(ERR_INVALID_PARAM) << "not a TypedValue message!";
     }
-
     std::string mac_address_string = typed_val->string_val();
     ASSIGN_OR_RETURN(uint64 mac_address,
                      YangStringToMacAddress(mac_address_string));
+
     // Set the value.
     auto status = SetValue(node_id, port_id, tree,
                            &SetRequest::Request::Port::mutable_mac_address,
@@ -1343,7 +1343,9 @@ void SetUpInterfacesInterfaceEthernetConfigMacAddress(uint64 node_id,
     ChassisConfig* new_config = config->writable();
     for (auto& singleton_port : *new_config->mutable_singleton_ports()) {
       if (singleton_port.node() == node_id && singleton_port.id() == port_id) {
-        singleton_port.mutable_config_params()->set_mac_address(mac_address);
+        singleton_port.mutable_config_params()
+            ->mutable_mac_address()
+            ->set_mac_address(mac_address);
         break;
       }
     }
@@ -1365,7 +1367,6 @@ void SetUpInterfacesInterfaceEthernetConfigMacAddress(uint64 node_id,
 
     return ::util::OkStatus();
   };
-
   node->SetOnTimerHandler(poll_functor)
       ->SetOnPollHandler(poll_functor)
       ->SetOnChangeHandler(on_change_functor)
@@ -3436,7 +3437,9 @@ void YangParseTreePaths::AddSubtreeInterfaceFromSingleton(
     port_auto_neg_enabled =
         IsPortAutonegEnabled(singleton.config_params().autoneg());
     port_enabled = IsAdminStateEnabled(singleton.config_params().admin_state());
-    mac_address = singleton.config_params().mac_address();
+    if (singleton.config_params().has_mac_address()) {
+      mac_address = singleton.config_params().mac_address().mac_address();
+    }
     loopback_enabled =
         IsLoopbackStateEnabled(singleton.config_params().loopback_mode());
   }
