@@ -6,6 +6,7 @@
 
 #include <cfenv>  // NOLINT
 #include <cmath>
+#include <regex>    // NOLINT
 #include <sstream>  // IWYU pragma: keep
 
 #include "absl/strings/str_replace.h"
