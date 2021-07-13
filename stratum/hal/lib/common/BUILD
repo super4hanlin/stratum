@@ -616,6 +616,7 @@ stratum_cc_test(
         "//stratum/lib:utils",
         "//stratum/lib/security:auth_policy_checker_mock",
         "//stratum/lib/test_utils:matchers",
+        "//stratum/lib/p4runtime:stream_message_reader_writer_mock",
         "//stratum/public/lib:error",
     ],
     defines = [
