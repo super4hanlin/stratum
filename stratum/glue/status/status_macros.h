@@ -282,7 +282,7 @@ class MakeErrorStream {
   // Adds RET_CHECK failure text to error message.
   MakeErrorStreamWithOutput& add_ret_check_failure(const char* condition) {
     return *this << "RET_CHECK failure (" << impl_->file_ << ":" << impl_->line_
-                 << ") " << condition << " ";
+                 << ") '" << condition << "' is false. ";
   }
 
   // Adds RET_CHECK_FAIL text to error message.
@@ -479,12 +479,11 @@ class UtilStatusConvertibleToBool {
 //
 // Intended to be used as a replacement for CHECK where crashes are
 // unacceptable. The containing function must return a ::util::Status.
-#define RET_CHECK(condition)                                             \
-  while (ABSL_PREDICT_FALSE(!(condition)))                               \
-    while (::util::status_macros::helper_log_always_return_true())       \
-  return ::util::status_macros::MakeErrorStream(__FILE__, __LINE__,      \
-                                                ::util::error::INTERNAL) \
-      .with_log_stack_trace()                                            \
+#define RET_CHECK(condition)                                        \
+  while (ABSL_PREDICT_FALSE(!(condition)))                          \
+  return ::util::status_macros::MakeErrorStream(__FILE__, __LINE__, \
+                                                ERR_INVALID_PARAM)  \
+      .with_log_stack_trace()                                       \
       .add_ret_check_failure(#condition)
 
 ///////
